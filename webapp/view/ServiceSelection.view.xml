@@ -1,0 +1,47 @@
+<mvc:View
+	controllerName="com.sap.mdi.explorer.controller.ServiceSelection"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc">
+
+	<Page
+		id="serviceSelectionPage"
+		title="{i18n>serviceSelTitle}"
+		showNavButton="true"
+		navButtonPress=".onNavBack"
+		busy="{appView>/busy}">
+
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>cancelButton}" press=".onNavBack" type="Reject" icon="sap-icon://log" />
+			</Toolbar>
+		</footer>
+
+		<subHeader>
+			<Toolbar>
+				<SearchField
+					id="instanceSearch"
+					placeholder="{i18n>searchPlaceholder}"
+					liveChange=".onSearchInstances"
+					width="100%" />
+			</Toolbar>
+		</subHeader>
+
+		<List
+			id="instanceList"
+			items="{serviceData>/filteredInstances}"
+			mode="SingleSelectMaster"
+			selectionChange=".onInstanceSelect"
+			noDataText="{i18n>noInstances}"
+			growing="true"
+			growingThreshold="50">
+			<StandardListItem
+				title="{serviceData>name}"
+				description="GUID: {serviceData>guid}"
+				info="{serviceData>last_operation/state}"
+				type="Navigation" />
+		</List>
+
+	</Page>
+
+</mvc:View>

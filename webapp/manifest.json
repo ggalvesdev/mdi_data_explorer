@@ -9,10 +9,6 @@
 		"description": "{{appDescription}}",
 		"applicationVersion": {
 			"version": "${version}"
-		},
-		"sourceTemplate": {
-			"id": "@ui5/mcp-server:ts",
-			"version": "0.2.10"
 		}
 	},
 
@@ -37,12 +33,13 @@
 			"minUI5Version": "1.146.0",
 			"libs": {
 				"sap.ui.core": {},
-				"sap.m": {}
+				"sap.m": {},
+				"sap.f": {},
+				"sap.ui.layout": {}
 			}
 		},
 
 		"flexEnabled": false,
-
 		"handleValidation": true,
 
 		"contentDensities": {
@@ -66,20 +63,39 @@
 				"type": "View",
 				"viewType": "XML",
 				"path": "com.sap.mdi.explorer.view",
-				"controlId": "app",
-				"controlAggregation": "pages"
+				"controlId": "appControl",
+				"controlAggregation": "pages",
+				"transition": "slide"
 			},
 			"routes": [
 				{
 					"pattern": "",
-					"name": "main",
-					"target": "main"
+					"name": "login",
+					"target": "login"
+				},
+				{
+					"pattern": "services",
+					"name": "serviceSelection",
+					"target": "serviceSelection"
+				},
+				{
+					"pattern": "explorer/{objectType}",
+					"name": "dataExplorer",
+					"target": "dataExplorer"
 				}
 			],
 			"targets": {
-				"main": {
-					"id": "main",
-					"name": "Main"
+				"login": {
+					"id": "login",
+					"name": "Login"
+				},
+				"serviceSelection": {
+					"id": "serviceSelection",
+					"name": "ServiceSelection"
+				},
+				"dataExplorer": {
+					"id": "dataExplorer",
+					"name": "DataExplorer"
 				}
 			}
 		}

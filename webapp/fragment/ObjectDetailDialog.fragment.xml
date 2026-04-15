@@ -1,0 +1,21 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Dialog
+		id="objectDetailDialog"
+		title="{i18n>recordDetail}"
+		contentWidth="60%"
+		contentHeight="70%"
+		draggable="true"
+		resizable="true"
+		verticalScrolling="true">
+		<VBox id="detailFormContainer" class="sapUiSmallMargin">
+			<!-- Form is inserted dynamically by the controller -->
+		</VBox>
+		<beginButton>
+			<Button text="{i18n>closeButton}" press=".onDetailClose" type="Emphasized" />
+		</beginButton>
+	</Dialog>
+
+</core:FragmentDefinition>

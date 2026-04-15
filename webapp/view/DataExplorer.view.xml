@@ -1,0 +1,70 @@
+<mvc:View
+	controllerName="com.sap.mdi.explorer.controller.DataExplorer"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.f">
+
+	<f:DynamicPage id="dynamicPage" showFooter="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title id="pageTitle" text="Data Explorer" />
+				</f:heading>
+				<f:actions>
+					<Button
+						id="loadMoreBtn"
+						text="{i18n>loadMore}"
+						icon="sap-icon://download"
+						press=".onLoadMore"
+						visible="{mdiData>/hasMoreEvents}" />
+					<Button
+						text="{i18n>refresh}"
+						icon="sap-icon://refresh"
+						press=".onRefresh" />
+				</f:actions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<HBox class="sapUiSmallMargin">
+					<ObjectStatus
+						text="Instance: {/selectedInstanceName}"
+						class="sapUiSmallMarginEnd" />
+					<ObjectStatus
+						text="Records: {mdiData>/recordCount}" />
+				</HBox>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<Table
+				id="dataTable"
+				mode="SingleSelectMaster"
+				selectionChange=".onRecordSelect"
+				growing="true"
+				growingThreshold="50"
+				noDataText="{i18n>noData}"
+				busy="{appView>/busy}">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title id="tableTitle" text="Records" />
+						<ToolbarSpacer />
+						<SearchField
+							id="recordSearch"
+							placeholder="{i18n>searchRecords}"
+							liveChange=".onSearchRecords"
+							width="20rem" />
+					</OverflowToolbar>
+				</headerToolbar>
+				<!-- Columns and items bound dynamically by the controller -->
+			</Table>
+		</f:content>
+		<f:footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>backButton}" press=".onNavBack" icon="sap-icon://nav-back" />
+				<Button text="{i18n>logoutButton}" press=".onLogout" type="Reject" icon="sap-icon://log" />
+			</OverflowToolbar>
+		</f:footer>
+	</f:DynamicPage>
+
+</mvc:View>

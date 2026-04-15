@@ -1,0 +1,40 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Dialog
+		id="serviceKeyDialog"
+		title="{i18n>selectKeyTitle}"
+		contentWidth="32rem"
+		contentHeight="24rem"
+		draggable="true"
+		resizable="true">
+		<NavContainer id="dialogNavContainer">
+
+			<!-- Step 1: Select Service Key -->
+			<Page id="keySelectionPage" title="{i18n>selectKeyTitle}" showNavButton="false">
+				<List
+					id="keyList"
+					mode="SingleSelectMaster"
+					selectionChange=".onKeySelect"
+					noDataText="{i18n>noKeys}">
+				</List>
+			</Page>
+
+			<!-- Step 2: Select MDI Object Type -->
+			<Page id="objectTypeSelectionPage" title="{i18n>selectObjectTitle}" showNavButton="true" navButtonPress=".onDialogNavBack">
+				<List
+					id="objectTypeList"
+					mode="SingleSelectMaster"
+					selectionChange=".onObjectTypeSelect"
+					noDataText="{i18n>noObjectTypes}">
+				</List>
+			</Page>
+
+		</NavContainer>
+		<beginButton>
+			<Button text="{i18n>cancelButton}" press=".onDialogCancel" />
+		</beginButton>
+	</Dialog>
+
+</core:FragmentDefinition>

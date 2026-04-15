@@ -1,0 +1,7 @@
+/* MDI Data Explorer - Custom Styles */
+
+.sapMText[renderWhitespace] {
+	white-space: pre-wrap;
+	font-family: monospace;
+	font-size: 0.8125rem;
+}

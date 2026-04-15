@@ -1,0 +1,79 @@
+<mvc:View
+	controllerName="com.sap.mdi.explorer.controller.Login"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+
+	<Page
+		id="loginPage"
+		title="{i18n>loginTitle}"
+		showNavButton="false">
+
+		<VBox class="sapUiMediumMargin" alignItems="Center">
+			<FlexBox justifyContent="Center" width="100%">
+				<VBox width="28rem">
+					<Title text="{i18n>appTitle}" level="H1" class="sapUiMediumMarginBottom" />
+
+					<f:Form id="loginForm" editable="true">
+						<f:layout>
+							<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+						</f:layout>
+						<f:formContainers>
+							<f:FormContainer title="{i18n>credentialsTitle}">
+								<f:formElements>
+									<f:FormElement label="{i18n>emailLabel}">
+										<f:fields>
+											<Input id="emailInput" type="Email" placeholder="{i18n>emailPlaceholder}" required="true" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="{i18n>passwordLabel}">
+										<f:fields>
+											<Input id="passwordInput" type="Password" placeholder="{i18n>passwordPlaceholder}" required="true"
+												submit=".onLogin" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="{i18n>regionLabel}">
+										<f:fields>
+											<Select id="regionSelect" selectedKey="login.cf.eu11.hana.ondemand.com">
+												<core:Item key="login.cf.eu10.hana.ondemand.com" text="EU10 (Frankfurt)" />
+												<core:Item key="login.cf.eu11.hana.ondemand.com" text="EU11 (EU Access)" />
+												<core:Item key="login.cf.eu20.hana.ondemand.com" text="EU20 (Netherlands)" />
+												<core:Item key="login.cf.eu30.hana.ondemand.com" text="EU30 (Munich)" />
+												<core:Item key="login.cf.us10.hana.ondemand.com" text="US10 (US East)" />
+												<core:Item key="login.cf.us20.hana.ondemand.com" text="US20 (US West)" />
+												<core:Item key="login.cf.us21.hana.ondemand.com" text="US21 (US East)" />
+												<core:Item key="login.cf.us30.hana.ondemand.com" text="US30 (US Central)" />
+												<core:Item key="login.cf.ap10.hana.ondemand.com" text="AP10 (Australia)" />
+												<core:Item key="login.cf.ap11.hana.ondemand.com" text="AP11 (Singapore)" />
+												<core:Item key="login.cf.ap12.hana.ondemand.com" text="AP12 (South Korea)" />
+												<core:Item key="login.cf.ap20.hana.ondemand.com" text="AP20 (Australia)" />
+												<core:Item key="login.cf.ap21.hana.ondemand.com" text="AP21 (Indonesia)" />
+												<core:Item key="login.cf.br10.hana.ondemand.com" text="BR10 (Brazil)" />
+												<core:Item key="login.cf.jp10.hana.ondemand.com" text="JP10 (Japan)" />
+												<core:Item key="login.cf.jp20.hana.ondemand.com" text="JP20 (Japan)" />
+												<core:Item key="login.cf.ca10.hana.ondemand.com" text="CA10 (Canada)" />
+												<core:Item key="login.cf.in30.hana.ondemand.com" text="IN30 (India)" />
+											</Select>
+										</f:fields>
+									</f:FormElement>
+								</f:formElements>
+							</f:FormContainer>
+						</f:formContainers>
+					</f:Form>
+
+					<Button
+						id="loginButton"
+						text="{i18n>loginButton}"
+						type="Emphasized"
+						width="100%"
+						press=".onLogin"
+						class="sapUiSmallMarginTop" />
+
+				</VBox>
+			</FlexBox>
+		</VBox>
+
+	</Page>
+
+</mvc:View>
