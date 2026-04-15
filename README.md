@@ -1,101 +1,246 @@
-# UI5 Application com.sap.mdi.explorer
+# MDI Data Explorer
 
-Insert the purpose of this project and some interesting info here...
+A SAPUI5 TypeScript application for dynamically browsing and exploring **SAP Master Data Integration (MDI)** objects. It authenticates against Cloud Foundry, discovers MDI service instances, and renders log data for any configured object type — all without requiring view changes when new objects are added.
 
-## Description
+## Table of Contents
 
-This app uses a TypeScript setup for developing UI5 applications. The central entry point for all information about using TypeScript with UI5 is at [https://ui5.github.io/typescript](https://ui5.github.io/typescript).
+- [How It Works](#how-it-works)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Adding a New MDI Object Type](#adding-a-new-mdi-object-type)
+- [Configuring Existing Object Types](#configuring-existing-object-types)
+- [Development](#development)
+- [Build](#build)
 
-See [`SAP-samples/ui5-typescript-helloworld`](https://github.com/SAP-samples/ui5-typescript-helloworld) for a similar sample app including documentation how all the bits and pieces fit together.
+---
 
-## Requirements
+## How It Works
 
-Either [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) for dependency management.
+The app follows a **configuration-driven rendering** pattern. Each MDI object type (e.g. Cost Center, Company Code) is described by a plain TypeScript config object that defines:
 
-## Preparation
+- The MDI log API endpoint path
+- Which columns to show in the list table (with their data paths)
+- Which fields and sections to show in the detail dialog
 
-Use `npm` (or `yarn`) to install the dependencies:
+The `DataExplorer` controller reads the active config at runtime and builds the table columns, row templates, and detail form **programmatically** — there are no per-object views. Adding a new object type requires no changes to any controller or view.
+
+```
+webapp/
+├── config/
+│   ├── types.ts                  ← TypeScript interfaces for configs
+│   ├── MdiObjectRegistry.ts      ← Central registry (add new types here)
+│   ├── CostCenterConfig.ts       ← Config for sap.odm.finance.costobject.CostCenter
+│   ├── CompanyCodeConfig.ts      ← Config for sap.odm.orgunit.CompanyCode
+│   └── BankConfig.ts             ← Config for sap.odm.finance.bank.Bank
+├── model/
+│   ├── AuthService.ts            ← CF OAuth + UAA client_credentials auth
+│   ├── CfApiService.ts           ← CF API (service instances, bindings, credentials)
+│   └── MdiApiService.ts          ← MDI log endpoint calls + delta token pagination
+├── controller/
+│   ├── Login.controller.ts
+│   ├── ServiceSelection.controller.ts
+│   └── DataExplorer.controller.ts
+└── view/ / fragment/             ← Views and dialog fragments
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or later)
+- A BTP account with at least one MDI service instance
+
+### Install dependencies
 
 ```sh
 npm install
 ```
 
-(To use yarn, just do `yarn` instead.)
-
-## Run the App
-
-Execute the following command to run the app locally for development in watch mode (the browser reloads the app automatically when there are changes in the source code):
+### Start the development server
 
 ```sh
 npm start
 ```
 
-As shown in the terminal after executing this command, the app is then running on http://localhost:8080/index.html. A browser window with this URL should automatically open.
+The app opens at **http://localhost:8080/index.html**.
 
-(When using yarn, do `yarn start` instead.)
+> **Note:** The dev server includes a CORS proxy at `/proxy/*` that forwards requests to external CF and MDI APIs. This is required for local development — the browser cannot call those APIs directly.
 
-## Debug the App
+---
 
-In the browser, you can directly debug the original TypeScript code, which is supplied via sourcemaps (need to be enabled in the browser's developer console if it does not work straight away). If the browser doesn't automatically jump to the TypeScript code when setting breakpoints, use e.g. `Ctrl`/`Cmd` + `P` in Chrome to open the `*.ts` file you want to debug.
+## Usage
 
-## Build the App
+1. **Login** — Enter your BTP email, password, and select your CF region.
+2. **Select Service Instance** — The app lists all MDI service instances in your account. Click one to continue.
+3. **Select Service Key** — Pick a service key (credential binding) from the dialog.
+4. **Select Object Type** — Choose which MDI object to explore (Cost Center, Company Code, Bank, or any custom type you have added).
+5. **Explore** — Browse the log records in the table. Use the search field to filter, click a row to see the full detail, and use **Load More** to fetch the next page via the delta token.
 
-### Unoptimized (but quick)
+---
 
-Execute the following command to build the project and get an app that can be deployed:
+## Adding a New MDI Object Type
 
-```sh
-npm run build
+It takes **three steps** and no view or controller changes.
+
+### Step 1 — Create a config file
+
+Create `webapp/config/MyObjectConfig.ts`:
+
+```typescript
+import type { MdiObjectConfig } from "./types";
+
+export const MyObjectConfig: MdiObjectConfig = {
+    // Unique key used in the URL route and registry lookup
+    key: "MyObject",
+
+    // Label shown in the object type selection dialog
+    displayName: "My Object",
+
+    // MDI log API path (version + fully qualified object name)
+    apiPath: "/v0/odm/1.0.0/log/sap.odm.mypackage.MyObject",
+
+    // Columns shown in the list table.
+    // "path" is a slash-separated path into each log record
+    // (e.g. "instance/someField" resolves record.instance.someField)
+    listColumns: [
+        { path: "instance/id",          label: "ID",          width: "10em" },
+        { path: "instance/displayName", label: "Display Name", width: "16em" },
+        { path: "event",                label: "Event",        width: "8em"  }
+    ],
+
+    // Sections and fields shown in the detail dialog
+    detailSections: [
+        {
+            title: "General Information",
+            fields: [
+                { path: "instance/id",          label: "ID"           },
+                { path: "instance/displayName", label: "Display Name" },
+                { path: "event",                label: "Event"        },
+                { path: "versionId",            label: "Version ID"   }
+            ]
+        },
+        {
+            title: "Details",
+            fields: [
+                { path: "instance/someBoolean", label: "Is Active",    type: "boolean" },
+                { path: "instance/someDate",    label: "Valid From",   type: "date"    },
+                { path: "instance/nestedArray", label: "Items",        type: "json"    }
+            ]
+        }
+    ],
+
+    // Used as the detail dialog title. Return any meaningful string from the record.
+    titleExtractor: (record) => {
+        const inst = record.instance as Record<string, unknown>;
+        return (inst?.displayName as string) || (inst?.id as string) || "My Object";
+    }
+};
 ```
 
-The result is placed into the `dist` folder. To start the generated package, just run
+### Step 2 — Register the config
 
-```sh
-npm run start:dist
+Open `webapp/config/MdiObjectRegistry.ts` and add two lines:
+
+```typescript
+import { MyObjectConfig } from "./MyObjectConfig";   // ← add this import
+
+registry.set(MyObjectConfig.key, MyObjectConfig);    // ← add this line
 ```
 
-Note that `index.html` still loads the UI5 framework from the relative URL `resources/...`, which does not physically exist, but is only provided dynamically by the UI5 tooling. So for an actual deployment you should change this URL to either [the CDN](https://sdk.openui5.org/#/topic/2d3eb2f322ea4a82983c1c62a33ec4ae) or your local deployment of UI5.
+### Step 3 — Done
 
-(When using yarn, do `yarn build` and `yarn start:dist` instead.)
+Restart the dev server (`npm start`). The new object type appears automatically in the selection dialog.
 
-### Optimized
+---
 
-For an optimized self-contained build (takes longer because the UI5 resources are built, too), do:
+## Configuring Existing Object Types
+
+Open the corresponding config file in `webapp/config/` and edit it directly.
+
+### Adding a column to the list table
+
+```typescript
+listColumns: [
+    { path: "instance/id",           label: "ID",          width: "10em" },
+    { path: "instance/displayName",  label: "Display Name", width: "16em" },
+    { path: "instance/country/code", label: "Country",      width: "8em"  }, // ← new column
+    { path: "event",                 label: "Event",        width: "8em"  }
+]
+```
+
+### Adding a field to the detail dialog
+
+Add a new entry to any `fields` array inside `detailSections`:
+
+```typescript
+{ path: "instance/currency/code", label: "Currency" }
+```
+
+Or add a completely new section:
+
+```typescript
+{
+    title: "Financial Settings",
+    fields: [
+        { path: "instance/currency/code",    label: "Currency"      },
+        { path: "instance/vatRegistrationId", label: "VAT Reg. ID"  }
+    ]
+}
+```
+
+### Field types
+
+| `type`    | Rendered as                              |
+|-----------|------------------------------------------|
+| *(omit)*  | Plain text (`String(value)`)             |
+| `boolean` | Checkbox (read-only)                     |
+| `date`    | Plain text (raw date string from API)    |
+| `json`    | Pretty-printed JSON (`renderWhitespace`) |
+| `array`   | Same as `json`                           |
+
+### Data paths
+
+Paths use `/` as a separator and map directly to the JSON structure of each log record returned by the MDI API. Array indices can be used:
+
+| Path                                     | Resolves to                                     |
+|------------------------------------------|-------------------------------------------------|
+| `instance/displayName`                   | `record.instance.displayName`                   |
+| `instance/localIdS4/costCenterId`        | `record.instance.localIdS4.costCenterId`        |
+| `instance/attributes/0/content/name`     | `record.instance.attributes[0].content.name`    |
+| `event`                                  | `record.event`                                  |
+
+---
+
+## Development
+
+```sh
+npm run ts-typecheck   # TypeScript type check (no emit)
+npm run lint           # ESLint
+npm run ui5lint        # UI5-specific linter (deprecated API, accessibility)
+```
+
+To debug in the browser, open DevTools — the original TypeScript source is available via sourcemaps. Use `Ctrl`/`Cmd` + `P` in Chrome to open a specific `.ts` file.
+
+---
+
+## Build
+
+```sh
+npm run build          # Standard build → dist/
+npm run start:dist     # Serve the built app
+```
+
+For a fully self-contained build (includes all UI5 resources, deployable to any static server):
 
 ```sh
 npm run build:opt
-```
-
-To start the generated package, again just run:
-
-```sh
 npm run start:dist
 ```
 
-In this case, all UI5 framework resources are also available within the `dist` folder, so the folder can be deployed as-is to any static web server, without changing the bootstrap URL.
-
-With the self-contained build, the bootstrap URL in `index.html` has already been modified to load the newly created `sap-ui-custom.js` for bootstrapping, which contains all app resources as well as all needed UI5 JavaScript resources. Most UI5 resources inside the `dist` folder are for this reason actually **not** needed to run the app. Only the non-JS-files, like translation texts and CSS files, are used and must also be deployed. (Only when for some reason JS files are missing from the optimized self-contained bundle, they are also loaded separately.)
-
-(When using yarn, do `yarn build:opt` and `yarn start:dist` instead.)
-
-## Check the Code
-
-Do the following to run a TypeScript check:
-
-```sh
-npm run ts-typecheck
-```
-
-This checks the application code for any type errors (but will also complain in case of fundamental syntax issues which break the parsing).
-
-To lint the TypeScript code, do:
-
-```sh
-npm run lint
-```
-
-(Again, when using yarn, do `yarn ts-typecheck` and `yarn lint` instead.)
+---
 
 ## License
 
-This project is licensed under the Apache Software License, version 2.0 except as noted otherwise in the [LICENSE](LICENSE) file.
+Apache Software License, version 2.0 — see [LICENSE](LICENSE).
