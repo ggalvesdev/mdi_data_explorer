@@ -1,0 +1,13 @@
+---
+applications:
+  - name: mdi-data-explorer
+    memory: 256M
+    disk_quota: 512M
+    buildpacks:
+      - nodejs_buildpack
+    path: .
+    command: node server.js
+    health-check-type: http
+    health-check-http-endpoint: /index.html
+    env:
+      NODE_ENV: production

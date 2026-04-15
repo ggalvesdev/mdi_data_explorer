@@ -1,0 +1,21 @@
+# CF push excludes — keeps the upload small.
+# Only dist/, server.js, package*.json are needed at runtime.
+
+# Source files
+webapp/
+proxy/
+tsconfig.json
+ui5.yaml
+ui5-dist.yaml
+ui5-coverage.yaml
+eslint.config.mjs
+.editorconfig
+.nycrc.json
+
+# Git
+.git/
+.gitignore
+
+# Local artefacts
+node_modules/
+coverage/
