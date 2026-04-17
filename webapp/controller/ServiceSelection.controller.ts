@@ -17,6 +17,8 @@ import { getAllObjectConfigs } from "../config/MdiObjectRegistry";
 interface ServiceInstance {
 	guid: string;
 	name: string;
+	spaceName?: string;
+	orgName?: string;
 	last_operation: { state: string };
 	links: {
 		self: { href: string };
@@ -71,9 +73,10 @@ export default class ServiceSelection extends BaseController {
 
 		try {
 			const instances = await CfApiService.getMdiServiceInstances(apiBaseUrl, token);
+			const enriched = await CfApiService.enrichWithSpaceAndOrg(instances, token);
 			const serviceDataModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
-			serviceDataModel.setProperty("/instances", instances);
-			serviceDataModel.setProperty("/filteredInstances", instances);
+			serviceDataModel.setProperty("/instances", enriched);
+			serviceDataModel.setProperty("/filteredInstances", enriched);
 		} catch (err: unknown) {
 			const message = err instanceof Error ? err.message : "Failed to load service instances.";
 			MessageBox.error(message);
@@ -87,7 +90,11 @@ export default class ServiceSelection extends BaseController {
 		const serviceDataModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
 		const all = serviceDataModel.getProperty("/instances") as ServiceInstance[];
 		const filtered = query
-			? all.filter(inst => inst.name.toLowerCase().includes(query))
+			? all.filter(inst =>
+				inst.name.toLowerCase().includes(query) ||
+				(inst.spaceName ?? "").toLowerCase().includes(query) ||
+				(inst.orgName ?? "").toLowerCase().includes(query)
+			)
 			: all;
 		serviceDataModel.setProperty("/filteredInstances", filtered);
 	}

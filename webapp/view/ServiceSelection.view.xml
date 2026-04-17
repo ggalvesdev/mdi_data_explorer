@@ -35,11 +35,16 @@
 			noDataText="{i18n>noInstances}"
 			growing="true"
 			growingThreshold="50">
-			<StandardListItem
+			<ObjectListItem
 				title="{serviceData>name}"
-				description="GUID: {serviceData>guid}"
-				info="{serviceData>last_operation/state}"
-				type="Navigation" />
+				intro="{serviceData>orgName} · {serviceData>spaceName}"
+				icon="sap-icon://it-instance"
+				type="Navigation">
+				<attributes>
+					<ObjectAttribute text="{serviceData>last_operation/state}" />
+					<ObjectAttribute text="GUID: {serviceData>guid}" />
+				</attributes>
+			</ObjectListItem>
 		</List>
 
 	</Page>
