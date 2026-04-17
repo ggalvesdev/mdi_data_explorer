@@ -2,6 +2,7 @@ import type { MdiObjectConfig } from "./types";
 import { CostCenterConfig } from "./CostCenterConfig";
 import { CompanyCodeConfig } from "./CompanyCodeConfig";
 import { BankConfig } from "./BankConfig";
+import { WorkforcePersonConfig } from "./WorkforcePersonConfig";
 
 /**
  * Registry of all MDI object type configurations.
@@ -16,6 +17,7 @@ const registry = new Map<string, MdiObjectConfig>();
 registry.set(CostCenterConfig.key, CostCenterConfig);
 registry.set(CompanyCodeConfig.key, CompanyCodeConfig);
 registry.set(BankConfig.key, BankConfig);
+registry.set(WorkforcePersonConfig.key, WorkforcePersonConfig);
 
 export function getObjectConfig(key: string): MdiObjectConfig | undefined {
 	return registry.get(key);
