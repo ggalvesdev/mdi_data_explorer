@@ -1,18 +1,19 @@
-const express = require("express");
+const approuter = require("@sap/approuter");
 const https = require("https");
-const path = require("path");
 const url = require("url");
 
-const app = express();
+const ar = approuter();
 
-// ── Static UI5 app ────────────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, "dist")));
-
-// ── Dynamic CORS proxy ────────────────────────────────────────────────────────
+// ── Authenticated proxy ───────────────────────────────────────────────────────
+// Runs after approuter session middleware (req.user is populated for authenticated users).
 // Forwards /proxy/{targetHost}/path?query  →  https://{targetHost}/path?query
-// Reuses the same routing convention as the local UI5 dev middleware.
-app.use("/proxy", (req, res) => {
-	// req.url = /{host}/path?query  (Express strips the /proxy prefix)
+ar.beforeRequestHandler.use("/proxy", (req, res) => {
+	if (!req.user) {
+		res.status(401).json({ error: "Unauthorized" });
+		return;
+	}
+
+	// req.url = /{host}/path?query  (approuter strips the /proxy mount prefix)
 	const withoutLeadingSlash = req.url.slice(1);
 	const slashIndex = withoutLeadingSlash.indexOf("/");
 
@@ -26,21 +27,11 @@ app.use("/proxy", (req, res) => {
 	const targetUrl = `https://${targetHost}${targetPath}`;
 	const parsed = url.parse(targetUrl);
 
-	// Handle CORS preflight
-	if (req.method === "OPTIONS") {
-		res.set({
-			"Access-Control-Allow-Origin": "*",
-			"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-			"Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
-		});
-		res.status(204).end();
-		return;
-	}
-
-	// Forward headers, fixing host
+	// Forward headers, fixing host; strip session cookie so it never leaks to external APIs
 	const headers = Object.assign({}, req.headers, { host: targetHost });
 	delete headers["origin"];
 	delete headers["referer"];
+	delete headers["cookie"];
 
 	const proxyReq = https.request(
 		{
@@ -52,11 +43,6 @@ app.use("/proxy", (req, res) => {
 			rejectUnauthorized: true
 		},
 		(proxyRes) => {
-			res.set({
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-				"Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
-			});
 			res.writeHead(proxyRes.statusCode, proxyRes.headers);
 			proxyRes.pipe(res, { end: true });
 		}
@@ -72,13 +58,8 @@ app.use("/proxy", (req, res) => {
 	req.pipe(proxyReq, { end: true });
 });
 
-// ── SPA fallback ──────────────────────────────────────────────────────────────
-app.get("*", (_req, res) => {
-	res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
-
 // ── Start ─────────────────────────────────────────────────────────────────────
-const port = parseInt(process.env.PORT || "8080", 10);
-app.listen(port, () => {
-	console.log(`MDI Data Explorer running on port ${port}`);
+ar.start({
+	port: process.env.PORT || 5000,
+	workingDir: __dirname
 });

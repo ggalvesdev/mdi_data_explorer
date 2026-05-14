@@ -23,7 +23,7 @@
 		"deploy": "npm run build && cf push"
 	},
 	"dependencies": {
-		"express": "^4.22.1"
+		"@sap/approuter": "^16"
 	},
 	"devDependencies": {
 		"@sapui5/types": "1.146.0",

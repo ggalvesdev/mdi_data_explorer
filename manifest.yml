@@ -7,7 +7,8 @@ applications:
       - nodejs_buildpack
     path: .
     command: node server.js
-    health-check-type: http
-    health-check-http-endpoint: /index.html
+    health-check-type: process
     env:
       NODE_ENV: production
+    services:
+      - mdi-explorer-uaa

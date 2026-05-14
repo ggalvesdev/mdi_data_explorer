@@ -1,0 +1,28 @@
+{
+	"xsappname": "mdi-data-explorer",
+	"tenant-mode": "dedicated",
+	"scopes": [
+		{
+			"name": "$XSAPPNAME.User",
+			"description": "Access MDI Data Explorer"
+		}
+	],
+	"role-templates": [
+		{
+			"name": "User",
+			"description": "MDI Data Explorer User",
+			"scope-references": [
+				"$XSAPPNAME.User"
+			]
+		}
+	],
+	"role-collections": [
+		{
+			"name": "MDI Data Explorer User",
+			"description": "Users allowed to access the MDI Data Explorer",
+			"role-template-references": [
+				"$XSAPPNAME.User"
+			]
+		}
+	]
+}
