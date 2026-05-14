@@ -1,0 +1,6 @@
+{
+  "name": "mdi-proxy-middleware",
+  "version": "1.0.0",
+  "description": "Custom CORS proxy middleware for MDI Data Explorer",
+  "main": "middleware.js"
+}
