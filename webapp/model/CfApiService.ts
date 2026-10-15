@@ -132,9 +132,33 @@ export default class CfApiService {
 			return {
 				...instance,
 				spaceName: space?.name ?? "",
-				orgName: orgMap.get(orgGuid) ?? ""
+				orgName: orgMap.get(orgGuid) ?? "",
+				orgGuid: orgGuid
 			};
 		});
+	}
+
+	/**
+	 * Groups enriched service instances by subaccount (CF org) and counts them.
+	 * Only orgs that actually contain instances appear. Sorted by org name.
+	 */
+	public static groupBySubaccount(
+		instances: unknown[]
+	): { orgGuid: string; orgName: string; count: number }[] {
+		const map = new Map<string, { orgGuid: string; orgName: string; count: number }>();
+		for (const inst of instances) {
+			const instance = inst as Record<string, unknown>;
+			const orgGuid = (instance.orgGuid as string) || "";
+			const orgName = (instance.orgName as string) || "(unknown)";
+			const key = orgGuid || orgName;
+			const existing = map.get(key);
+			if (existing) {
+				existing.count++;
+			} else {
+				map.set(key, { orgGuid, orgName, count: 1 });
+			}
+		}
+		return Array.from(map.values()).sort((a, b) => a.orgName.localeCompare(b.orgName));
 	}
 
 	/**

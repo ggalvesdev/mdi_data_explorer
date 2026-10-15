@@ -22,22 +22,12 @@
 						<f:formContainers>
 							<f:FormContainer title="{i18n>credentialsTitle}">
 								<f:formElements>
-									<f:FormElement label="{i18n>emailLabel}">
-										<f:fields>
-											<Input id="emailInput" type="Email" placeholder="{i18n>emailPlaceholder}" required="true" />
-										</f:fields>
-									</f:FormElement>
-									<f:FormElement label="{i18n>passwordLabel}">
-										<f:fields>
-											<Input id="passwordInput" type="Password" placeholder="{i18n>passwordPlaceholder}" required="true"
-												submit=".onLogin" />
-										</f:fields>
-									</f:FormElement>
 									<f:FormElement label="{i18n>regionLabel}">
 										<f:fields>
-											<Select id="regionSelect" selectedKey="login.cf.eu11.hana.ondemand.com">
+											<Select id="regionSelect" selectedKey="login.cf.eu12.hana.ondemand.com">
 												<core:Item key="login.cf.eu10.hana.ondemand.com" text="EU10 (Frankfurt)" />
 												<core:Item key="login.cf.eu11.hana.ondemand.com" text="EU11 (EU Access)" />
+												<core:Item key="login.cf.eu12.hana.ondemand.com" text="EU12 (Netherlands)" />
 												<core:Item key="login.cf.eu20.hana.ondemand.com" text="EU20 (Netherlands)" />
 												<core:Item key="login.cf.eu30.hana.ondemand.com" text="EU30 (Munich)" />
 												<core:Item key="login.cf.us10.hana.ondemand.com" text="US10 (US East)" />
@@ -55,6 +45,17 @@
 												<core:Item key="login.cf.ca10.hana.ondemand.com" text="CA10 (Canada)" />
 												<core:Item key="login.cf.in30.hana.ondemand.com" text="IN30 (India)" />
 											</Select>
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="{i18n>passcodeLabel}">
+										<f:fields>
+											<Input id="passcodeInput" type="Password" placeholder="{i18n>passcodePlaceholder}" required="true"
+												submit=".onLogin" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement>
+										<f:fields>
+											<Link id="passcodeLink" text="{i18n>getPasscodeLink}" press=".onGetPasscode" />
 										</f:fields>
 									</f:FormElement>
 								</f:formElements>

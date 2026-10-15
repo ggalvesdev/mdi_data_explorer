@@ -4,6 +4,7 @@ import Input from "sap/m/Input";
 import Select from "sap/m/Select";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import AuthService from "../model/AuthService";
+import { URLHelper } from "sap/m/library";
 
 /**
  * @namespace com.sap.mdi.explorer.controller
@@ -18,13 +19,21 @@ export default class Login extends BaseController {
 		// Reset login form if navigating back
 	}
 
+	/**
+	 * Open the SSO passcode page for the selected region in a new tab.
+	 * The user copies the one-time code shown there and pastes it into the form.
+	 */
+	public onGetPasscode(): void {
+		const region = (this.byId("regionSelect") as Select).getSelectedKey();
+		URLHelper.redirect(`https://${region}/passcode`, true);
+	}
+
 	public async onLogin(): Promise<void> {
-		const email = (this.byId("emailInput") as Input).getValue().trim();
-		const password = (this.byId("passwordInput") as Input).getValue();
+		const passcode = (this.byId("passcodeInput") as Input).getValue().trim();
 		const region = (this.byId("regionSelect") as Select).getSelectedKey();
 
-		if (!email || !password) {
-			MessageBox.error("Please enter your email and password.");
+		if (!passcode) {
+			MessageBox.error("Please enter your one-time passcode.");
 			return;
 		}
 
@@ -33,12 +42,16 @@ export default class Login extends BaseController {
 		appView.setProperty("/busy", true);
 
 		try {
-			const result = await AuthService.loginToCf(region, email, password);
+			const result = await AuthService.loginToCf(region, passcode);
 			appModel.setProperty("/cfToken", result.accessToken);
 			appModel.setProperty("/apiBaseUrl", result.apiBaseUrl);
-			this.navTo("serviceSelection");
+			// Clear any data cached from a previous session/account
+			const serviceData = this.getOwnerComponent().getModel("serviceData") as JSONModel;
+			serviceData.setProperty("/instances", []);
+			serviceData.setProperty("/subaccounts", []);
+			this.navTo("subaccountSelection");
 		} catch (err: unknown) {
-			const message = err instanceof Error ? err.message : "Login failed. Please check your credentials.";
+			const message = err instanceof Error ? err.message : "Login failed. Please check your passcode.";
 			MessageBox.error(message);
 		} finally {
 			appView.setProperty("/busy", false);

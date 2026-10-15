@@ -10,6 +10,7 @@ import Page from "sap/m/Page";
 import SearchField from "sap/m/SearchField";
 import type { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import type { SearchField$LiveChangeEvent } from "sap/m/SearchField";
+import type { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import CfApiService from "../model/CfApiService";
 import AuthService from "../model/AuthService";
 import { getAllObjectConfigs } from "../config/MdiObjectRegistry";
@@ -19,6 +20,7 @@ interface ServiceInstance {
 	name: string;
 	spaceName?: string;
 	orgName?: string;
+	orgGuid?: string;
 	last_operation: { state: string };
 	links: {
 		self: { href: string };
@@ -53,35 +55,41 @@ export default class ServiceSelection extends BaseController {
 
 	private _dialog: Dialog;
 	private _selectedInstance: ServiceInstance;
+	private _subaccountGuid: string;
 
 	public onInit(): void {
 		this.getRouter().getRoute("serviceSelection").attachPatternMatched(this._onRouteMatched, this);
 	}
 
-	private async _onRouteMatched(): Promise<void> {
+	private _onRouteMatched(event: Route$PatternMatchedEvent): void {
 		const appModel = this.getOwnerComponent().getModel() as JSONModel;
 		const token = appModel.getProperty("/cfToken") as string;
-		const apiBaseUrl = appModel.getProperty("/apiBaseUrl") as string;
 
 		if (!token) {
 			this.navTo("login", {}, true);
 			return;
 		}
 
-		const appView = this.getOwnerComponent().getModel("appView") as JSONModel;
-		appView.setProperty("/busy", true);
+		this._subaccountGuid = (event.getParameter("arguments") as { subaccount: string }).subaccount;
 
-		try {
-			const instances = await CfApiService.getMdiServiceInstances(apiBaseUrl, token);
-			const enriched = await CfApiService.enrichWithSpaceAndOrg(instances, token);
-			const serviceDataModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
-			serviceDataModel.setProperty("/instances", enriched);
-			serviceDataModel.setProperty("/filteredInstances", enriched);
-		} catch (err: unknown) {
-			const message = err instanceof Error ? err.message : "Failed to load service instances.";
-			MessageBox.error(message);
-		} finally {
-			appView.setProperty("/busy", false);
+		const serviceDataModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
+		const all = serviceDataModel.getProperty("/instances") as ServiceInstance[];
+
+		// Data is loaded by the subaccount step; if it's missing (e.g. deep link
+		// or page reload), go back there to load it.
+		if (!all || all.length === 0) {
+			this.navTo("subaccountSelection", {}, true);
+			return;
+		}
+
+		const forSubaccount = all.filter(inst => inst.orgGuid === this._subaccountGuid);
+		serviceDataModel.setProperty("/currentSubaccountName", forSubaccount[0]?.orgName ?? "");
+		serviceDataModel.setProperty("/currentSubaccountGuid", this._subaccountGuid);
+		serviceDataModel.setProperty("/filteredInstances", forSubaccount);
+
+		const search = this.byId("instanceSearch") as SearchField;
+		if (search) {
+			search.setValue("");
 		}
 	}
 
@@ -89,13 +97,14 @@ export default class ServiceSelection extends BaseController {
 		const query = event.getParameter("newValue")?.toLowerCase() || "";
 		const serviceDataModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
 		const all = serviceDataModel.getProperty("/instances") as ServiceInstance[];
+		const base = all.filter(inst => inst.orgGuid === this._subaccountGuid);
 		const filtered = query
-			? all.filter(inst =>
+			? base.filter(inst =>
 				inst.name.toLowerCase().includes(query) ||
 				(inst.spaceName ?? "").toLowerCase().includes(query) ||
 				(inst.orgName ?? "").toLowerCase().includes(query)
 			)
-			: all;
+			: base;
 		serviceDataModel.setProperty("/filteredInstances", filtered);
 	}
 

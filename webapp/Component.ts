@@ -42,7 +42,11 @@ export default class Component extends UIComponent {
 		// Service data model
 		this.setModel(new JSONModel({
 			instances: [],
-			filteredInstances: []
+			filteredInstances: [],
+			subaccounts: [],
+			filteredSubaccounts: [],
+			currentSubaccountName: "",
+			currentSubaccountGuid: ""
 		}), "serviceData");
 
 		// MDI data model

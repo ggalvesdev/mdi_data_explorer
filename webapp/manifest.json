@@ -74,12 +74,17 @@
 					"target": "login"
 				},
 				{
-					"pattern": "services",
+					"pattern": "services/{subaccount}",
 					"name": "serviceSelection",
 					"target": "serviceSelection"
 				},
 				{
-					"pattern": "explorer/{objectType}",
+					"pattern": "subaccounts",
+						"name": "subaccountSelection",
+						"target": "subaccountSelection"
+					},
+					{
+						"pattern": "explorer/{objectType}",
 					"name": "dataExplorer",
 					"target": "dataExplorer"
 				}
@@ -89,7 +94,11 @@
 					"id": "login",
 					"name": "Login"
 				},
-				"serviceSelection": {
+				"subaccountSelection": {
+						"id": "subaccountSelection",
+						"name": "SubaccountSelection"
+					},
+					"serviceSelection": {
 					"id": "serviceSelection",
 					"name": "ServiceSelection"
 				},

@@ -296,7 +296,13 @@ export default class DataExplorer extends BaseController {
 	}
 
 	public onNavBack(): void {
-		this.navTo("serviceSelection");
+		const serviceModel = this.getOwnerComponent().getModel("serviceData") as JSONModel;
+		const subaccountGuid = serviceModel.getProperty("/currentSubaccountGuid") as string;
+		if (subaccountGuid) {
+			this.navTo("serviceSelection", { subaccount: subaccountGuid });
+		} else {
+			this.navTo("subaccountSelection");
+		}
 	}
 
 	public onLogout(): void {
@@ -314,7 +320,7 @@ export default class DataExplorer extends BaseController {
 			selectedInstanceName: ""
 		});
 		mdiModel.setData({ records: [], displayedRecords: [], nextDeltaToken: "", hasMoreEvents: false, recordCount: 0 });
-		serviceModel.setData({ instances: [], filteredInstances: [] });
+		serviceModel.setData({ instances: [], filteredInstances: [], subaccounts: [], filteredSubaccounts: [], currentSubaccountName: "", currentSubaccountGuid: "" });
 
 		this.navTo("login", {}, true);
 	}

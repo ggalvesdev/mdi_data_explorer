@@ -5,7 +5,7 @@
 
 	<Page
 		id="serviceSelectionPage"
-		title="{i18n>serviceSelTitle}"
+		title="{= ${i18n>serviceSelTitle} + ' – ' + ${serviceData>/currentSubaccountName} }"
 		showNavButton="true"
 		navButtonPress=".onNavBack"
 		busy="{appView>/busy}">

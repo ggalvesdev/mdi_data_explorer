@@ -1,0 +1,49 @@
+<mvc:View
+	controllerName="com.sap.mdi.explorer.controller.SubaccountSelection"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc">
+
+	<Page
+		id="subaccountSelectionPage"
+		title="{i18n>subaccountSelTitle}"
+		showNavButton="true"
+		navButtonPress=".onNavBack"
+		busy="{appView>/busy}">
+
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>logoutButton}" press=".onNavBack" type="Reject" icon="sap-icon://log" />
+			</Toolbar>
+		</footer>
+
+		<subHeader>
+			<Toolbar>
+				<SearchField
+					id="subaccountSearch"
+					placeholder="{i18n>subaccountSearchPlaceholder}"
+					liveChange=".onSearchSubaccounts"
+					width="100%" />
+			</Toolbar>
+		</subHeader>
+
+		<List
+			id="subaccountList"
+			items="{serviceData>/filteredSubaccounts}"
+			mode="SingleSelectMaster"
+			selectionChange=".onSubaccountSelect"
+			noDataText="{i18n>noSubaccounts}"
+			growing="true"
+			growingThreshold="50">
+			<ObjectListItem
+				title="{serviceData>orgName}"
+				intro="{i18n>subaccountIntro}"
+				icon="sap-icon://building"
+				number="{serviceData>count}"
+				numberUnit="{i18n>instancesUnit}"
+				type="Navigation" />
+		</List>
+
+	</Page>
+
+</mvc:View>
